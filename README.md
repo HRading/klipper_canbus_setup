@@ -298,9 +298,9 @@ Detected UUID: 812c57297b3a, Application: CanBoot
 Query Complete
 ```
 
-> Note the two serial UUID
+> Note the two serial UUIDs and which is which, as you will need them when configuring the MCUs in Klippers printer.cfg.
 >
-> To differentiate which uuid correspond to which board, you can plug only one board and get it's serial UUID
+> To differentiate which uuid correspond to which board, you can unplug the SB2040, that leaves you with just the Octopus bard.
 
 Replace the **<SERIAL_UUID>** with the serial found i above query.
 ```
@@ -310,7 +310,34 @@ python3 flash_can.py -i can0 -u <SERIAL_UUID> -f ~/firmware/sb2040_1.0_klipper.b
 The board should now be flashed with klipper can.
 
 
+## Klipper config
+connect to Klipper using Fluid, and edit the printer.cfg file.
 
+
+Klipper configuration example
+> note that the uuids are the UUID values returned from the `flash_can.py` script we ran earlier.
+
+```
+[mcu]
+canbus_uuid: c2ecdf459ba5
+
+[mcu sb2040]
+canbus_uuid: 685d07717632
+
+...
+
+[temperature_fan exhaust_fan]
+...
+sensor_pin: sb2040:gpio26
+
+[temperature_sensor toolhead]
+sensor_type: temperature_mcu
+sensor_mcu: sb2040
+min_temp: 0
+max_temp: 100
+```
+
+>Note: if a pin is to be inverted, the `!` goes before the MCU like `sensor_pin: !sb2040:gpio26`
 
 
 
