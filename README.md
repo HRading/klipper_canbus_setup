@@ -130,7 +130,8 @@ You should now see a green "connected" message.
 ![STM32_connected](images/STM32_connected.png)
 
 7. Chip erase
-Go to the Memory menu
+
+Go to the **Memory & ...** menu
 
 ![STM32_Erase](images/STM32_download_menu.png)
 
