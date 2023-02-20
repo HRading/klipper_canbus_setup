@@ -69,7 +69,7 @@ sudo apt install python3-numpy python3-matplotlib!
 Enable Linux SPI driver on Rasbberry Pi, run `sudo raspi-config!` and under **Interface options** select **SPI** and then **Enable**, Save and exit.
 Details on configuring the printer.cfg, refer to the [Klipper documentation](https://www.klipper3d.org/Measuring_Resonances.html#software-installation).
 
-## CanBoot
+## CanBoot firmware
 To utilize CanBoot, we need to add CanBoot firmware on the Octopus board adn the SB2040 board.
 
 ### Clone repo
@@ -159,7 +159,7 @@ Go back to the **Memory & File edition** menu
 Set the sb2040 board to DFU. To do that, remove any power to the board, press the boot button while connecting the board to USB on the Pi.
 The board should now be in DFU.
 
-To confirm, do a `lsusb`
+To confirm, do a `lsusb` and note down the ID of the device.
 
 ![sb2040_dfumode](images/sb2040_in_dfu.png)
 
@@ -175,11 +175,140 @@ And compile it
 make -j 4
 ```
 
+Flash the firmware (note the Id is the one from the above step).
 ```
 sudo make flash FLASH_DEVICE=2e8a:0003
 ```
 The SB2040 is flashed and restarts. There should now be three solid blue LEDs turned on.
 Disconnect the USB cable again.
+
+## Octopus as USB to CAN bridge
+To get the Octopus board working as an USB to CAN bridge, we need to install Klipper on the board.
+
+### Create Klipper image
+We will configure the firmware
+```
+cd ~/klipper
+make menuconfig
+```
+![octopus_klipper firmware](images/octopus_klipper_firmware_config.png)
+
+And compile it
+```
+make
+```
+
+```
+mv ~/klipper/out/klipper.bin ~/firmware/octopus_1.1_klipper.bin
+```
+
+### Flash image
+```
+ls -al /dev/serial/by-id
+```
+> Note the serial of the octopus Pro board
+
+```
+cd ~/CanBoot/scripts
+pip3 install pyserial
+python3 flash_can.py -f ~/firmware/octopus_1.1_klipper.bin -d /dev/serial/by-id/usb-CanBoot_stm32f446xx_170038000650314D35323820-if00
+```
+
+The board should now be flashed with a klipper can bridge.
+
+## CAN Network
+Next we need to create the can0 interface. This is needed before we can flash the sb2040 over CAN.
+
+Create a new file using nano
+```
+sudo nano /etc/network/interfaces.d/can0
+```
+
+paste the followiogn content
+```
+allow-hotplug can0
+iface can0 can static
+  bitrate 1000000
+  up ifconfig $IFACE txqueuelen 1024
+```
+exit and save using CTRL+Q 
+
+Power off/on everything
+
+> check that the can network is now present
+```
+ip a
+```
+```
+can0: <NOARP,UP,LOWER_UP,ECHO> mtu 16 qdisc pfifo_fast state UP group default qlen 1024
+link/can
+```
+
+> Check for more details
+```
+ip -details -statistics link show can0
+```
+```
+can0: <NOARP,UP,LOWER_UP,ECHO> mtu 16 qdisc pfifo_fast state UP mode DEFAULT group default qlen 1024
+link/can  promiscuity 0 minmtu 0 maxmtu 0
+can state ERROR-ACTIVE restart-ms 0
+        bitrate 1000000 sample-point 0.750
+        tq 62 prop-seg 5 phase-seg1 6 phase-seg2 4 sjw 1
+        gs_usb: tseg1 1..16 tseg2 1..8 sjw 1..4 brp 1..1024 brp-inc 1
+        clock 48000000
+        re-started bus-errors arbit-lost error-warn error-pass bus-off
+        0          0          0          0          0          0         numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+RX: bytes  packets  errors  dropped overrun mcast
+11412      1551     0       0       0       0
+TX: bytes  packets  errors  dropped carrier collsns
+3568       641      0       0       0       0
+```
+## Klipper on SB2040
+Now we should be able to install Klipper on the SB2040 using the can interface
+
+### Create Klipper image
+```
+cd ~/klipper
+make menuconfig
+```
+![coonboot firmware](images/sb2040_klipper_firmware_config.png)
+
+And compile it
+```
+make
+```
+
+```
+mv ~/klipper/out/klipper.bin ~/firmware/sb2040_1.0_klipper.bin
+```
+
+### Flash image
+
+First we need to find the UUID of the SB2040
+```
+cd ~/CanBoot/scripts
+python3 flash_can.py -i can0 -q
+```
+Should give two devices, one is the Octopus (the one already running klipper), the one we need is the one running **CanBoot**
+```
+Resetting all bootloader node IDs...
+Checking for canboot nodes...
+Detected UUID: 6881ae241426, Application: Klipper
+Detected UUID: 812c57297b3a, Application: CanBoot
+Query Complete
+```
+
+> Note the two serial UUID
+>
+> To differentiate which uuid correspond to which board, you can plug only one board and get it's serial UUID
+
+Replace the **<SERIAL_UUID>** with the serial found i above query.
+```
+python3 flash_can.py -i can0 -u <SERIAL_UUID> -f ~/firmware/sb2040_1.0_klipper.bin
+```
+
+The board should now be flashed with klipper can.
+
 
 
 
