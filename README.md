@@ -71,7 +71,6 @@ Details on configuring the printer.cfg, refer to the [Klipper documentation](htt
 
 ## CanBoot
 To utilize CanBoot, we need to add CanBoot firmware on the Octopus board adn the SB2040 board.
-This is where I ran into problems using Akhamars guide, as the F429 chip behaves differently.
 
 ### Clone repo
 First we clone the CanBoot repository
@@ -81,17 +80,14 @@ cd ~
 git clone https://github.com/Arksine/CanBoot
 ```
 
-### Create images
-Next we create both firmware images
-
-#### CanBoot for octopus Pro
+### CanBoot for octopus Pro
 
 We will configure the firmware for the Octopus pro first
 ```
 cd ~/CanBoot
 make menuconfig
 ```
-![coonboot firmware](images/octopus_canboot_firmware_config.png)
+![canboot firmware](images/octopus_F429_canboot_firmware_config.png)
 
 > For F446 processor => `STM32F446` and `12 Mhz` 
 
@@ -106,6 +102,58 @@ make
 mkdir ~/firmware
 mv ~/CanBoot/out/canboot.bin ~/firmware/octopus_1.1_canboot.bin
 ```
+
+#### Flashing the image
+This is where I ran into problems using Akhamars guide, as the F429 chip behaves differently. We can't flash in DFU mode from the Pi.
+To get arround this, we use the STM32CubeProgrammer from the PC.
+
+Copy the `~/firmware/octopus_1.1_canboot.bin` from Pi to local PC, using WinSCP or other tool.
+
+First we need to configure the Octopus for DFU mode.
+**Make sure the power is off to the Octopus board.**
+1. Ensure the USB power jumper is removed (red circle)
+2. place jumper on the boot0 header (green circle)
+
+![Octopus DFU mode](images/Octopus_pro_DFU_mode.png)
+
+3. Connect the Octopus to PC using the USB-C on board to PC USB-A
+4. Power the Octopus from 24v PSU
+5. Start the STM32CubeProgrammer software on PC.
+
+6. connect to board
+At the top right corner, make sure USB is selected and then click **Connect**
+![STM32_connect](STM32_connect.png)
+
+You should now see a green "connected" message.
+![STM32_connected](STM32_connected.png)
+
+7. Chip erase
+Go to the Memory menu
+![STM32_Erase](STM32_download_menu.png)
+
+Click the **Full chip erase** button
+![STM32_chiperErase](STM32_chipErase.png)
+
+Confirm and wait for complete message.
+![STM32_chiperEraseConfirm](STM32_Erase_confirm.png)
+![STM32_chiperEraseComplete](STM32_Erase_complete.png)
+
+Go back to the **Memory & File edition** menu
+![STM32_chiperEraseComplete](STM32_Write_firmware.png)
+   1. Select **Open file** tab, find the `octopus_1.1_canboot.bin` file you copied from the Pi.
+   2. Click the **Download** button
+   3. Click **Disconnect**
+
+8. Power off the board, adn remove the jumper from boot0 header.
+
+### CanBoot for SB2040
+
+
+
+
+
+
+
 
 
 
