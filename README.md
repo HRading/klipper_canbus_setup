@@ -59,6 +59,54 @@ Use KIAUH interface to install the following components (click 1 for install and
 2. Moonraker
 3. Fluidd
 
+## Configure Rasberry Pi as MCU
+To be able to use Rasberry Pi as an MCU, and use it for input shaper, install Numpy package and dependencies.
+```
+~/klippy-env/bin/pip install -v numpy
+sudo apt update
+sudo apt install python3-numpy python3-matplotlib!
+```
+Enable Linux SPI driver on Rasbberry Pi, run `sudo raspi-config!` and under **Interface options** select **SPI** and then **Enable**, Save and exit.
+Details on configuring the printer.cfg, refer to the [Klipper documentation](https://www.klipper3d.org/Measuring_Resonances.html#software-installation).
+
+## CanBoot
+To utilize CanBoot, we need to add CanBoot firmware on the Octopus board adn the SB2040 board.
+This is where I ran into problems using Akhamars guide, as the F429 chip behaves differently.
+
+### Clone repo
+First we clone the CanBoot repository
+```
+sudo su pi
+cd ~
+git clone https://github.com/Arksine/CanBoot
+```
+
+### Create images
+Next we create both firmware images
+
+#### CanBoot for octopus Pro
+
+We will configure the firmware for the Octopus pro first
+```
+cd ~/CanBoot
+make menuconfig
+```
+![coonboot firmware](images/octopus_canboot_firmware_config.png)
+
+> For F446 processor => `STM32F446` and `12 Mhz` 
+
+> For F429 processor => `STM32F429` and `8 Mhz`
+
+And compile it
+```
+make
+```
+
+```
+mkdir ~/firmware
+mv ~/CanBoot/out/canboot.bin ~/firmware/octopus_1.1_canboot.bin
+```
+
 
 
 
