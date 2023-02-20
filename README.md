@@ -153,11 +153,33 @@ Go back to the **Memory & File edition** menu
    2. Click the **Download** button
    3. Click **Disconnect**
 
-8. Power off the board, adn remove the jumper from boot0 header.
+8. Power off the board, and remove the jumper from boot0 header.
 
 ### CanBoot for SB2040
+Set the sb2040 board to DFU. To do that, remove any power to the board, press the boot button while connecting the board to USB on the Pi.
+The board should now be in DFU.
 
+To confirm, do a `lsusb`
 
+![sb2040_dfumode](images/sb2040_in_dfu.png)
+
+Configure the firmware
+```
+cd ~/CanBoot
+make menuconfig
+```
+![sb2040_can firmware](images/sb2040_canboot_firmware_config.png)
+
+And compile it
+```
+make -j 4
+```
+
+```
+sudo make flash FLASH_DEVICE=2e8a:0003
+```
+The SB2040 is flashed and restarts. There should now be three solid blue LEDs turned on.
+Disconnect the USB cable again.
 
 
 
