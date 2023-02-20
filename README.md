@@ -8,7 +8,7 @@ The content of this guide is based on information gathered from different source
 - Akhamars great guide:  https://github.com/akhamar/voron_canbus_octopus_sb2040
 - TeamFDM guide: [How to Use CAN Toolhead Boards Connected Directly to Octopus / Octopus Pro on CanBoot](https://www.teamfdm.com/forums/topic/672-how-to-use-can-toolhead-boards-connected-directly-to-octopus-octopus-pro-on-canboot/)
 
-## used hardware
+## Used hardware
 - Raspberry Pi 4 with 32GB SD card.
 - Bigtreetech Octopus Pro v1.0 with F429 chip
 - Mellow Fly-SB2040 v1 board for StealthBurner
@@ -59,8 +59,8 @@ Use KIAUH interface to install the following components (click 1 for install and
 2. Moonraker
 3. Fluidd
 
-## Configure Rasberry Pi as MCU
-To be able to use Rasberry Pi as an MCU, and use it for input shaper, install Numpy package and dependencies.
+## Configure Raspberry Pi as MCU
+To be able to use Raspberry Pi as an MCU, and use it for input shaper, install Numpy package and dependencies.
 ```
 ~/klippy-env/bin/pip install -v numpy
 sudo apt update
