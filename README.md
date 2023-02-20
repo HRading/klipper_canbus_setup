@@ -122,24 +122,24 @@ First we need to configure the Octopus for DFU mode.
 
 6. connect to board
 At the top right corner, make sure USB is selected and then click **Connect**
-![STM32_connect](STM32_connect.png)
+![STM32_connect](images/STM32_connect.png)
 
 You should now see a green "connected" message.
-![STM32_connected](STM32_connected.png)
+![STM32_connected](images/STM32_connected.png)
 
 7. Chip erase
 Go to the Memory menu
-![STM32_Erase](STM32_download_menu.png)
+![STM32_Erase](images/STM32_download_menu.png)
 
 Click the **Full chip erase** button
-![STM32_chiperErase](STM32_chipErase.png)
+![STM32_chiperErase](images/STM32_chipErase.png)
 
 Confirm and wait for complete message.
-![STM32_chiperEraseConfirm](STM32_Erase_confirm.png)
-![STM32_chiperEraseComplete](STM32_Erase_complete.png)
+![STM32_chiperEraseConfirm](images/STM32_Erase_confirm.png)
+![STM32_chiperEraseComplete](images/STM32_Erase_complete.png)
 
 Go back to the **Memory & File edition** menu
-![STM32_chiperEraseComplete](STM32_Write_firmware.png)
+![STM32_chiperEraseComplete](images/STM32_Write_firmware.png)
    1. Select **Open file** tab, find the `octopus_1.1_canboot.bin` file you copied from the Pi.
    2. Click the **Download** button
    3. Click **Disconnect**
