@@ -4,9 +4,10 @@
 This is my guide for how to setup Klipper on my Voron 2.4 350 to use canbus It focuses on Octopus Pro based on a F429 chip, and a Mellow Fly SB2040 EBB.
 Its main purpose is for me to remebmer what I did, if i ever need to reinstall.
 
-The content of this guide is based on information gathered from different sources, promarily these two:
+The content of this guide is based on information gathered from different sources, promarily these three:
 - Akhamars great guide:  https://github.com/akhamar/voron_canbus_octopus_sb2040
 - TeamFDM guide: [How to Use CAN Toolhead Boards Connected Directly to Octopus / Octopus Pro on CanBoot](https://www.teamfdm.com/forums/topic/672-how-to-use-can-toolhead-boards-connected-directly-to-octopus-octopus-pro-on-canboot/)
+- TeamFDM toppic: [install canboot on sb2040](https://www.teamfdm.com/forums/topic/851-install-canboot-on-sb2040/)
 
 ## Used hardware
 - Raspberry Pi 4 with 32GB SD card.
@@ -309,6 +310,14 @@ python3 flash_can.py -i can0 -u <SERIAL_UUID> -f ~/firmware/sb2040_1.0_klipper.b
 
 The board should now be flashed with klipper can.
 
+## Add CanBoot to Moonraker's update manager (optional):
+```
+[update_manager CanBoot]
+type: git_repo
+path: /home/pi/CanBoot
+origin: https://github.com/Arksine/CanBoot.git
+```
+This will just keep the cloned repo updated - it won't automatically flash new bootloader versions.
 
 ## Klipper config
 connect to Klipper using Fluid, and edit the printer.cfg file.
