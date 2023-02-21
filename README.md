@@ -1,4 +1,4 @@
-# voron_canbus_setup
+# Klipper_canbus_setup
 
 ## Introduction
 This is my guide for how to setup Klipper on my Voron 2.4 350 to use canbus It focuses on Octopus Pro based on a F429 chip, and a Mellow Fly SB2040 EBB.
