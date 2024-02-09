@@ -9,6 +9,10 @@ The content of this guide is based on information gathered from different source
 - TeamFDM guide: [How to Use CAN Toolhead Boards Connected Directly to Octopus / Octopus Pro on CanBoot](https://www.teamfdm.com/forums/topic/672-how-to-use-can-toolhead-boards-connected-directly-to-octopus-octopus-pro-on-canboot/)
 - TeamFDM toppic: [install canboot on sb2040](https://www.teamfdm.com/forums/topic/851-install-canboot-on-sb2040/)
 
+For the move to Katapult instead of Canboot, this was used:
+- https://www.teamfdm.com/forums/topic/2140-klipper-update-v0110-266-g261efdd8-and-octopus-canbus-sb2040-latest-aug-2023-update/
+- https://github.com/Arksine/katapult
+
 ## Used hardware
 - Raspberry Pi 4 with 32GB SD card.
 - Bigtreetech Octopus Pro v1.0 with F429 chip
@@ -70,29 +74,29 @@ sudo apt install python3-numpy python3-matplotlib!
 Enable Linux SPI driver on Rasbberry Pi, run `sudo raspi-config!` and under **Interface options** select **SPI** and then **Enable**, Save and exit.
 Details on configuring the printer.cfg, refer to the [Klipper documentation](https://www.klipper3d.org/Measuring_Resonances.html#software-installation).
 
-## CanBoot firmware
-To utilize CanBoot, we need to add CanBoot firmware on the Octopus board adn the SB2040 board.
+## Katapult (CanBoot) firmware
+To utilize Katapult (previously CanBoot), we need to add Katapult firmware on the Octopus board and the SB2040 board.
 
 ### Clone repo
-First we clone the CanBoot repository
+First we clone the Katapult repository
 ```
 sudo su pi
 cd ~
-git clone https://github.com/Arksine/CanBoot
+git clone https://github.com/Arksine/Katapult
 ```
 
-### CanBoot for octopus Pro
+### Katapult for octopus Pro
 
 We will configure the firmware for the Octopus pro first
 ```
-cd ~/CanBoot
+cd ~/Kataput
 make menuconfig
 ```
-![canboot firmware](images/octopus_F429_canboot_firmware_config.png)
+![katapult firmware](images/octopus_F429_katapult_firmware_config.png)
 
 > For F446 processor => `STM32F446` and `12 Mhz` 
 
-> For F429 processor => `STM32F429` and `8 Mhz`
+> For F429 processor => `STM32F429` and `8 Mhz` (this is the board I have.)
 
 And compile it
 ```
@@ -101,14 +105,14 @@ make
 
 ```
 mkdir ~/firmware
-mv ~/CanBoot/out/canboot.bin ~/firmware/octopus_1.1_canboot.bin
+mv ~/katapult/out/katapult.bin ~/firmware/octopus_1.1_katapult.bin
 ```
 
 #### Flashing the image
 This is where I ran into problems using Akhamars guide, as the F429 chip behaves differently. We can't flash in DFU mode from the Pi.
 To get arround this, we use the STM32CubeProgrammer from the PC.
 
-Copy the `~/firmware/octopus_1.1_canboot.bin` from Pi to local PC, using WinSCP or other tool.
+Copy the `~/firmware/octopus_1.1_katapult.bin` from Pi to local PC, using WinSCP or other tool.
 
 First we need to configure the Octopus for DFU mode.
 **Make sure the power is off to the Octopus board.**
@@ -132,7 +136,7 @@ You should now see a green "connected" message.
 
 7. Chip erase
 
-Go to the **Memory & ...** menu
+Go to the **Erasing & Programming** menu
 
 ![STM32_Erase](images/STM32_download_menu.png)
 
@@ -150,13 +154,13 @@ Go back to the **Memory & File edition** menu
 
 ![STM32_chiperEraseComplete](images/STM32_Write_firmware.png)
 
-   1. Select **Open file** tab, find the `octopus_1.1_canboot.bin` file you copied from the Pi.
+   1. Select **Open file** tab, find the `octopus_1.1_katapult.bin` file you copied from the Pi.
    2. Click the **Download** button
    3. Click **Disconnect**
 
 8. Power off the board, and remove the jumper from boot0 header.
 
-### CanBoot for SB2040
+### katapult for SB2040
 Set the sb2040 board to DFU. To do that, remove any power to the board, press the boot button while connecting the board to USB on the Pi.
 The board should now be in DFU.
 
@@ -166,10 +170,10 @@ To confirm, do a `lsusb` and note down the ID of the device.
 
 Configure the firmware
 ```
-cd ~/CanBoot
+cd ~/katapult
 make menuconfig
 ```
-![sb2040_can firmware](images/sb2040_canboot_firmware_config.png)
+![sb2040_can firmware](images/sb2040_katapult_firmware_config.png)
 
 And compile it
 ```
@@ -210,9 +214,9 @@ ls -al /dev/serial/by-id
 > Note the serial of the octopus Pro board
 
 ```
-cd ~/CanBoot/scripts
+cd ~/katapult/scripts
 pip3 install pyserial
-python3 flash_can.py -f ~/firmware/octopus_1.1_klipper.bin -d /dev/serial/by-id/usb-CanBoot_stm32f446xx_170038000650314D35323820-if00
+python3 flash_can.py -f ~/firmware/octopus_1.1_klipper.bin -d /dev/serial/by-id/usb-katapult_stm32f429xx_310052000750314B33323220-if00
 ```
 
 The board should now be flashed with a klipper can bridge.
@@ -225,7 +229,7 @@ Create a new file using nano
 sudo nano /etc/network/interfaces.d/can0
 ```
 
-paste the followiogn content
+paste the following content
 ```
 allow-hotplug can0
 iface can0 can static
@@ -272,7 +276,7 @@ Now we should be able to install Klipper on the SB2040 using the can interface
 cd ~/klipper
 make menuconfig
 ```
-![coonboot firmware](images/sb2040_klipper_firmware_config.png)
+![sb240 klipper firmware](images/sb2040_klipper_firmware_config.png)
 
 And compile it
 ```
@@ -287,15 +291,15 @@ mv ~/klipper/out/klipper.bin ~/firmware/sb2040_1.0_klipper.bin
 
 First we need to find the UUID of the SB2040
 ```
-cd ~/CanBoot/scripts
+cd ~/katapult/scripts
 python3 flash_can.py -i can0 -q
 ```
-Should give two devices, one is the Octopus (the one already running klipper), the one we need is the one running **CanBoot**
+Should give two devices, one is the Octopus (the one already running klipper), the one we need is the one running **katapult**
 ```
 Resetting all bootloader node IDs...
-Checking for canboot nodes...
+Checking for katapult nodes...
 Detected UUID: 6881ae241426, Application: Klipper
-Detected UUID: 812c57297b3a, Application: CanBoot
+Detected UUID: 812c57297b3a, Application: katapult
 Query Complete
 ```
 
@@ -303,19 +307,25 @@ Query Complete
 >
 > To differentiate which uuid correspond to which board, you can unplug the SB2040, that leaves you with just the Octopus bard.
 
+**Note:** If the boards have previously been configured in klipper with their UUIDs, they will not show up if Klipper is already flashed to the device.
+
 Replace the **<SERIAL_UUID>** with the serial found i above query.
 ```
 python3 flash_can.py -i can0 -u <SERIAL_UUID> -f ~/firmware/sb2040_1.0_klipper.bin
+python3 flash_can.py -i can0 -u 812c57297b3a -f ~/firmware/sb2040_1.0_klipper.bin
+812c57297b3a
 ```
 
 The board should now be flashed with klipper can.
 
-## Add CanBoot to Moonraker's update manager (optional):
+Reboot the Pi
+
+## Add katapult to Moonraker's update manager (optional):
 ```
-[update_manager CanBoot]
+[update_manager katapult]
 type: git_repo
-path: /home/pi/CanBoot
-origin: https://github.com/Arksine/CanBoot.git
+path: /home/pi/katapult
+origin: https://github.com/Arksine/katapult.git
 ```
 This will just keep the cloned repo updated - it won't automatically flash new bootloader versions.
 
