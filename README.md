@@ -9,6 +9,9 @@ The content of this guide is based on information gathered from different source
 - TeamFDM guide: [How to Use CAN Toolhead Boards Connected Directly to Octopus / Octopus Pro on CanBoot](https://www.teamfdm.com/forums/topic/672-how-to-use-can-toolhead-boards-connected-directly-to-octopus-octopus-pro-on-canboot/)
 - TeamFDM toppic: [install canboot on sb2040](https://www.teamfdm.com/forums/topic/851-install-canboot-on-sb2040/)
 
+For understanding CANbus for your 3D printer in depth, this page is good information:
+- CANBus Guide: [Esoterical CAN Bus Guide](https://canbus.esoterical.online/)
+
 For the move to Katapult instead of Canboot, this was used:
 - https://www.teamfdm.com/forums/topic/2140-klipper-update-v0110-266-g261efdd8-and-octopus-canbus-sb2040-latest-aug-2023-update/
 - https://github.com/Arksine/katapult
@@ -361,7 +364,7 @@ max_temp: 100
 
 # Bigtreetech MMB CAN v1.0 ERCF board
 ## katapult for the ERCF MMB
-Unplug the board for external power, and add the "VUSB" jumper to power board from USB.
+Unplug the board from external power, and add the "VUSB" jumper to power board from USB.
 
 Set the MBB board to DFU. To do that, remove any power to the board, press the boot button while connecting the board to USB on the Pi.
 The board should now be in DFU.
@@ -379,12 +382,18 @@ make menuconfig
 
 And compile it
 ```
-make -j 4
+make
 ```
+
+Get the MMB boards address:
+```
+dfu-util -l
+```
+![MMB_dfu-util_list](images/MMB_dfu-util_list.png)
 
 Flash the firmware (note the Id is the one from the above step).
 ```
-sudo make flash FLASH_DEVICE=0483:df11
+sudo dfu-util -R -a 0 -s 0x08000000:force:mass-erase:leave -D ~/katapult/out/katapult.bin -d 0483:df11
 ```
 
 Move the new firmware file to the firmaware folder
