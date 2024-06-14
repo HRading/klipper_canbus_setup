@@ -363,6 +363,7 @@ max_temp: 100
 
 
 # Bigtreetech MMB CAN v1.0 ERCF board
+In general, follow the guide on the [Esoterical CAN Bus Guide](https://canbus.esoterical.online/) for adding toolboards.
 ## katapult for the ERCF MMB
 Unplug the board from external power, and add the "VUSB" jumper to power board from USB.
 
@@ -395,13 +396,9 @@ Flash the firmware (note the Id is the one from the above step).
 ```
 sudo dfu-util -R -a 0 -s 0x08000000:force:mass-erase:leave -D ~/katapult/out/katapult.bin -d 0483:df11
 ```
+**NOTE:** If the result shows an “Error during download get_status” or something, but above it it still has "File downloaded successfullY" then it still flashed OK and you can ignore that error.
 
-Move the new firmware file to the firmaware folder
-```
-mv ~/katapult/out/katapult.bin ~/firmware/mmb_katapult.bin
-```
-Copy the `~/firmware/mmb_katapult.bin` from Pi to local PC, using WinSCP or other tool.
-
+![MMB_flash_err](images/MMB_flash_err.png)
 
 The MMB is flashed and restarts.
 Disconnect the USB cable again, remove the "VUSB" jumper and connect to CAN and power from printer.
