@@ -2,7 +2,7 @@
 
 ## Introduction
 This is my guide for how to setup Klipper on my Voron 2.4 350 to use canbus It focuses on Octopus Pro based on a F429 chip, and a Mellow Fly SB2040 EBB.
-Its main purpose is for me to remebmer what I did, if i ever need to reinstall.
+Its main purpose is for me to remember what I did, if i ever need to reinstall.
 
 The content of this guide is based on information gathered from different sources, promarily these three:
 - Akhamars great guide:  https://github.com/akhamar/voron_canbus_octopus_sb2040
@@ -357,6 +357,45 @@ max_temp: 100
 ```
 
 >Note: if a pin is to be inverted, the `!` goes before the MCU like `sensor_pin: !sb2040:gpio26`
+
+
+# Bigtreetech MMB CAN v1.0 ERCF board
+## katapult for the ERCF MMB
+Unplug the board for external power, and add the "VUSB" jumper to power board from USB.
+
+Set the MBB board to DFU. To do that, remove any power to the board, press the boot button while connecting the board to USB on the Pi.
+The board should now be in DFU.
+
+To confirm, do a `lsusb` and note down the ID of the device.
+
+![mmb_dfumode](images/mmb_in_dfu.png)
+
+Configure the firmware
+```
+cd ~/katapult
+make menuconfig
+```
+![mmb_katapult firmware](images/mmb_katapult_firmware_config.png)
+
+And compile it
+```
+make -j 4
+```
+
+Flash the firmware (note the Id is the one from the above step).
+```
+sudo make flash FLASH_DEVICE=0483:df11
+```
+
+Move the new firmware file to the firmaware folder
+```
+mv ~/katapult/out/katapult.bin ~/firmware/mmb_katapult.bin
+```
+Copy the `~/firmware/mmb_katapult.bin` from Pi to local PC, using WinSCP or other tool.
+
+
+The MMB is flashed and restarts.
+Disconnect the USB cable again, remove the "VUSB" jumper and connect to CAN and power from printer.
 
 
 
