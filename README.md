@@ -368,14 +368,14 @@ The board should now be in DFU.
 
 To confirm, do a `lsusb` and note down the ID of the device.
 
-![mmb_dfumode](images/mmb_in_dfu.png)
+![mmb_dfumode](images/MMB_in_dfu.png)
 
 Configure the firmware
 ```
 cd ~/katapult
 make menuconfig
 ```
-![mmb_katapult firmware](images/mmb_katapult_firmware_config.png)
+![mmb_katapult firmware](images/MMB_katapult_firmware.png)
 
 And compile it
 ```
