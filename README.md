@@ -403,10 +403,92 @@ sudo dfu-util -R -a 0 -s 0x08000000:force:mass-erase:leave -D ~/katapult/out/kat
 The MMB is flashed and restarts.
 Disconnect the USB cable again, remove the "VUSB" jumper and connect to CAN and power from printer.
 
+## Test CAN
+Katapult should now be successfully flashed.
+Shut down your Pi (sudo shutdown now) and then power off your entire printer.
+Take out any DFU jumpers on your toolhead (if it needed them) and then wire up your toolhead power (24v and gnd) and CAN (CANH/CANL) wires, then power your printer back up.
+Run the following command to see if the toolhead board is on the CAN network and waiting in Katapult mode
 
+```
+python3 ~/katapult/scripts/flashtool.py -i can0 -q
+```
 
+You should see a "Found UUID" with "Application: Katapult"
+In this case the UUID is: edec0f48227c
 
+![MMB_katapult_uuid](images/MMB_katapult_uuid.png)
 
+Note down the UUID.
 
+## Install Klipper
+Move into the klipper directory on the Pi by running:
+```
+cd ~/klipper
+```
+Then go into the klipper configuration menu by running:
+```
+make menuconfig
+```
+![MMB_klipper_firmware](images/MMB_klipper_firmware.png)
+
+Once you have the firmware configured, run a
+```
+make clean
+```
+
+to make sure there are no old files hanging around, then
+```
+make
+```
+
+to compile the firmware. It will save the firmware to ~/klipper/out/klipper.bin
+
+## Using Katapult to flash Klipper
+Stop the Klipper service on the Pi by running:
+
+```
+sudo service klipper stop
+```
+
+Run the following query command and take note of the Katapult device that it shows:
+```
+python3 ~/katapult/scripts/flashtool.py -i can0 -q
+```
+
+![MMB_klipper_firmware_uuid](images/MMB_klipper_firmware_uuid.png)
+
+Then run the following command to install klipper firmware via Katapult. Use the UUID you just retrieved in the above query.
+```
+python3 ~/katapult/scripts/flashtool.py -i can0 -u edec0f48227c -f ~/klipper/out/klipper.bin
+```
+
+where the "-u" ID is what you found from the "flashtool.py -i can0 -q" query.
+
+![MMB_klipper_firmware_flash](images/MMB_klipper_firmware_flash.png)
+
+One the flash has been completed you can run the
+```
+python3 ~/katapult/scripts/flashtool.py -i can0 -q
+```
+
+command again. This time you should see the same UUID but with "Application: Klipper" instead of "Application: Katapult"
+
+![MMB_klipper_firmware_application](images/MMB_klipper_firmware_application.png)
+
+## Klipper is now installed
+You can now run the Klipper canbus query to retrieve the canbus_uuid of your toolhead board:
+```
+~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0
+```
+
+![MMB_canbus_application_uuid](images/MMB_canbus_application_uuid.png)
+
+In this case the output is:  canbus_uuid=edec0f48227c, Application: Klipper
+Use this UUID in the [mcu] section of your printer.cfg in order for Klipper (on Pi) to connect to the toolhead board.
+
+Start the Klipper service on the Pi again by running:
+```
+sudo service klipper start
+```
 
 
